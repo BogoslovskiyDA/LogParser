@@ -4,4 +4,7 @@ My log parser for MY.GAMES Сareer
 
 ##Options
 
--p PATH, --path PATH	Read file/folder by specified PATH
+| Arguments | Description |
+| ------ | ------ |
+|-p PATH, --path PATH|Read file/folder by specified PATH|
+|-f REGEX, --find REGEX|Search strings by regular expression|
