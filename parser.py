@@ -1,28 +1,27 @@
 import glob
-import os
 import sys
 import argparse
 import re
+from progress.bar import IncrementalBar
 
 
-def read_file(file, regular):
+def read_file(in_file, regular, out_file):
     '''
     Searching with Regular Expressions
 
-    :param file: File path to read
+    :param in_file: File path to read
     :param regular: Regular expression
+    :param out_file: File to write
     :return: None
     '''
 
-    f = open(file, 'r')
+    f = open(in_file, 'r')
     while True:
         line = f.readline()
         if not line:
             break
-        match = re.findall(fr'{regular}', line)
-        if not match:
-            continue
-        print(match)
+        if re.findall(fr'{regular}', line):
+            out_file.write(line)
     f.close()
 
 
@@ -33,18 +32,23 @@ def create_arguments():
     :return: argparse.ArgumentParser
     '''
 
-    arg_par = argparse.ArgumentParser()
-    arg_par.add_argument('-p', '--path')
-    arg_par.add_argument('-f', '--find')
-    return arg_par
+    arg_par = argparse.ArgumentParser(add_help=False)
+    arg_par.add_argument('-h', '--help', action='help', help='Print this help message and exit')
+    arg_par.add_argument('-p', '--path', help='Read file/folder by specified PATH (RegEx)')
+    arg_par.add_argument('-f', '--find', help='Search strings (RegEx)', metavar='REGEX')
+    arg_par.add_argument('-o', '--output', default='output.txt', help=f'File to write. Default=output.txt')
+    return arg_par.parse_args(sys.argv[1:])
 
 
 if __name__ == '__main__':
-    arg_par = create_arguments()
-    argument = arg_par.parse_args(sys.argv[1:])
-    files = glob.glob(os.path.join(argument.path, '*.txt'))
-    if (files != []):
+    argument = create_arguments()
+    files = glob.glob(fr'{argument.path}')
+    out_file = open(argument.output, 'w')
+    if files:
+        bar = IncrementalBar('Progress', max=len(files))
+        bar.start()
         for filename in files:
-            read_file(filename, argument.find)
-    else:
-        read_file(argument.path, argument.find)
+            read_file(filename, argument.find, out_file)
+            bar.next()
+        bar.finish()
+    out_file.close()
